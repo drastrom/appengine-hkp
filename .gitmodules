@@ -1,0 +1,3 @@
+[submodule "lib/python-pgpdump"]
+	path = lib/python-pgpdump
+	url = https://github.com/toofishes/python-pgpdump
