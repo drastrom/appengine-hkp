@@ -113,3 +113,5 @@ print "Real fingerprints"
 pp.pprint([pubkey.fingerprint for pubkey in pubkeys])
 pp.pprint([pubkey.keyid for pubkey in pubkeys])
 pp.pprint([pubkey.shortkeyid for pubkey in pubkeys])
+print "Uid parts"
+pp.pprint([uid._parse_uid() for uid in pubkey.uids for pubkey in pubkeys])
