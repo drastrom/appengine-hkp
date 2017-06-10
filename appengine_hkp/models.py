@@ -30,10 +30,10 @@ class KeyBase(polymodel.PolyModel):
 
 	@property
 	def fingerprint(self):
-		return codecs.encode(self.reversed_fingerprint[::-1], 'hex').upper().encode('ascii')
+		return codecs.encode(self.reversed_fingerprint[::-1], 'hex').upper()
 
 	def _fingerprint_suffix(self, bytelen):
-		return codecs.encode(self.reversed_fingerprint[bytelen-1::-1], 'hex').upper().encode('ascii')
+		return codecs.encode(self.reversed_fingerprint[bytelen-1::-1], 'hex').upper()
 
 	@property
 	def keyid(self):
