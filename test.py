@@ -56,10 +56,10 @@ class KeyBase(object):
 
 	@property
 	def fingerprint(self):
-		return codecs.encode(self.reversed_fingerprint[::-1], 'hex').upper().encode('ascii')
+		return codecs.encode(self.reversed_fingerprint[::-1], 'hex').upper()
 
 	def fingerprint_suffix(self, bytelen):
-		return codecs.encode(self.reversed_fingerprint[bytelen-1::-1], 'hex').upper().encode('ascii')
+		return codecs.encode(self.reversed_fingerprint[bytelen-1::-1], 'hex').upper()
 
 	@property
 	def keyid(self):
@@ -109,9 +109,9 @@ for packet in data.packets():
 		curuid.uid = packet.user
 
 pp.pprint([pubkey.__dict__ for pubkey in pubkeys])
-print "Real fingerprints"
+print("Real fingerprints")
 pp.pprint([pubkey.fingerprint for pubkey in pubkeys])
 pp.pprint([pubkey.keyid for pubkey in pubkeys])
 pp.pprint([pubkey.shortkeyid for pubkey in pubkeys])
-print "Uid parts"
+print("Uid parts")
 pp.pprint([uid._parse_uid() for uid in pubkey.uids for pubkey in pubkeys])
