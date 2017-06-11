@@ -12,6 +12,9 @@ pp = pprint.PrettyPrinter()
 import datetime
 import re
 import codecs
+import base64
+import pgpdump.utils
+import struct
 
 class Uid(object):
 	def __repr__(self):
@@ -72,12 +75,25 @@ class KeyBase(object):
 class PublicSubkey(KeyBase):
 	pass
 
+
+# see https://stackoverflow.com/a/17511341
+def _ceildiv(a, b):
+	return -(-a // b)
+
+def _linewrap(string, linelen=64):
+	return "\n".join([string[linelen*i:linelen*i+linelen] for i in range(0,_ceildiv(len(string),linelen))])
+
+
 class PublicKey(KeyBase):
 	def __init__(self):
 		super(PublicKey, self).__init__()
 		self.uids = []
 		self.subkeys = []
 		self.key_data = bytearray()
+
+	@property
+	def asciiarmored(self):
+		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(_linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(self.key_data))[1:]))
 
 
 with open('mykey.asc', 'rb') as infile:
@@ -115,3 +131,4 @@ pp.pprint([pubkey.keyid for pubkey in pubkeys])
 pp.pprint([pubkey.shortkeyid for pubkey in pubkeys])
 print("Uid parts")
 pp.pprint([uid._parse_uid() for uid in pubkey.uids for pubkey in pubkeys])
+print pubkeys[0].asciiarmored

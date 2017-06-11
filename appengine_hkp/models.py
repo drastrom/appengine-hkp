@@ -2,8 +2,20 @@
 
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
+
+import base64
 import codecs
 import re
+import struct
+
+import pgpdump.utils
+
+# see https://stackoverflow.com/a/17511341
+def _ceildiv(a, b):
+	return -(-a // b)
+
+def _linewrap(string, linelen=64):
+	return "\n".join([string[linelen*i:linelen*i+linelen] for i in range(0,_ceildiv(len(string),linelen))])
 
 class Uid(ndb.Model):
 	uid = ndb.StringProperty('u', indexed=True, required=True)
@@ -51,4 +63,8 @@ class PublicKey(KeyBase):
 	uids = ndb.KeyProperty(Uid, 'u', indexed=True, repeated=True)
 	subkeys = ndb.KeyProperty(PublicSubkey, 's', indexed=True, repeated=True)
 	key_data = ndb.BlobProperty('d', indexed=False, required=True)
+
+	@property
+	def asciiarmored(self):
+		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(_linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(self.key_data))[1:]))
 
