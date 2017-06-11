@@ -1,0 +1,9 @@
+handlers:
+- url: /pks/add
+  script: appengine_hkp.handlers.app
+  secure: always
+  login: admin
+
+- url: /pks/lookup
+  script: appengine_hkp.handlers.app
+
