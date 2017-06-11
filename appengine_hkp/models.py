@@ -60,8 +60,8 @@ class PublicSubkey(KeyBase):
 	pass
 
 class PublicKey(KeyBase):
-	uids = ndb.KeyProperty(Uid, 'u', indexed=True, repeated=True)
-	subkeys = ndb.KeyProperty(PublicSubkey, 's', indexed=True, repeated=True)
+	uids = ndb.KeyProperty(Uid, 'u', indexed=False, repeated=True)
+	subkeys = ndb.KeyProperty(PublicSubkey, 's', indexed=False, repeated=True)
 	key_data = ndb.BlobProperty('d', indexed=False, required=True)
 
 	@property
