@@ -1,0 +1,7 @@
+- [ ] index op
+- [ ] vindex op
+- [ ] fingerprint=on for index/vindex
+- [ ] exact=on for index/vindex/get
+- [ ] get op return multiple keys
+- [ ] text search
+- [ ] add op merge key (and nm option to prevent it)
