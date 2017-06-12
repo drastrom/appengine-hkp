@@ -64,10 +64,9 @@ class KeyLookup(webapp2.RequestHandler):
 			if type(search) == str:
 				search = search.decode('utf-8')
 
-
 			upper_range = utils.incremented_array(array.array('u', search)).tounicode()
 			filters = []
-			#filters.append(ndb.AND(models.Uid.key.id >= search, models.Uid.key.id < upper_range))
+			filters.append(ndb.AND(models.Uid.uid >= search, models.Uid.uid < upper_range))
 			filters.append(ndb.AND(models.Uid.name >= search, models.Uid.name < upper_range))
 			filters.append(ndb.AND(models.Uid.comment >= search, models.Uid.comment < upper_range))
 			filters.append(ndb.AND(models.Uid.email >= search, models.Uid.email < upper_range))

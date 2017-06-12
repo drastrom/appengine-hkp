@@ -48,12 +48,6 @@ class KeyBase(polymodel.PolyModel):
 	def shortkeyid(self):
 		return self._fingerprint_suffix(4)
 
-	@property
-	def integerid(self):
-		# Ugh, 1 <= id < 2**63
-		return struct.unpack('>Q', self.reversed_fingerprint[7::-1])[0] & 0x7FFFFFFFFFFFFFFF
-
-
 class PublicSubkey(KeyBase):
 	pass
 
