@@ -5,10 +5,12 @@ import webapp2
 import codecs
 import re
 
+from . import exceptions
 from . import models
 from . import parser
 from . import utils
 
+TEST = True
 
 class KeyAdd(webapp2.RequestHandler):
 	def post(self):
@@ -49,37 +51,49 @@ class KeyLookup(webapp2.RequestHandler):
 				key = key.key.parent().get()
 
 			if key is None:
-				self.response.status = "404 Not Found"
+				raise exceptions.HttpNotFoundException()
 			else:
-				#self.response.content_type = 'application/pgp-keys'
-				self.response.content_type = 'text/plain'
+				self.response.content_type = 'application/pgp-keys' if not TEST else 'text/plain'
 				self.response.write(key.asciiarmored)
 		else:
-			self.response.status = "501 Not Implemented"
+			raise exceptions.HttpNotImplementedException()
 
 	def index_op(self, search, exact=False, fingerprint=False, options=None):
-		pass
+		raise exceptions.HttpNotImplementedException()
 
 	def vindex_op(self, search, exact=False, fingerprint=False, options=None):
-		pass
+		raise exceptions.HttpNotImplementedException()
 
 	_operation_mapping = {
 			'get': get_op,
-			#'index': index_op,
-			#'vindex': vindex_op
+			'index': index_op,
+			'vindex': vindex_op
 	}
 
 	def get(self):
-		op = self.request.get('op')
-		search = self.request.get('search')
-		options = self.request.get('options')
-		fingerprint = self.request.get('fingerprint')
-		exact = self.request.get('exact')
+		try:
+			op = self.request.get('op')
+			search = self.request.get('search')
+			options = (self.request.get('options') or "").split(',')
+			fingerprint = self.request.get('fingerprint') or "off"
+			exact = self.request.get('exact') or "off"
 
-		if op in self._operation_mapping:
-			self._operation_mapping[op](self, search, exact, fingerprint, options)
-		else:
-			self.response.status = "501 Not Implemented"
+			if fingerprint not in ('on', 'off') or exact not in ('on', 'off'):
+				raise exceptions.HttpBadRequestException()
+
+			fingerprint = True if fingerprint == 'on' else False
+			exact = True if exact == 'on' else False
+
+			op_func = None
+			try:
+				op_func = self._operation_mapping[op]
+			except KeyError, e:
+				raise exceptions.HttpNotImplementedException()
+
+			op_func(self, search, exact, fingerprint, options)
+
+		except exceptions.HttpStatusException, e:
+			self.response.status = e.status_line
 
 app = webapp2.WSGIApplication([
 	('/pks/add', KeyAdd),
