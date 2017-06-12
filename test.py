@@ -16,6 +16,8 @@ import base64
 import pgpdump.utils
 import struct
 
+from appengine_hkp import utils
+
 class Uid(object):
 	def __repr__(self):
 		return "<%s: %r>" % (self.__class__.__name__, self.__dict__)
@@ -82,14 +84,6 @@ class PublicSubkey(KeyBase):
 	pass
 
 
-# see https://stackoverflow.com/a/17511341
-def _ceildiv(a, b):
-	return -(-a // b)
-
-def _linewrap(string, linelen=64):
-	return "\n".join([string[linelen*i:linelen*i+linelen] for i in range(0,_ceildiv(len(string),linelen))])
-
-
 class PublicKey(KeyBase):
 	def __init__(self):
 		super(PublicKey, self).__init__()
@@ -99,7 +93,7 @@ class PublicKey(KeyBase):
 
 	@property
 	def asciiarmored(self):
-		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(_linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(self.key_data)))[1:]))
+		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(utils.linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(self.key_data)))[1:]))
 
 
 with open('mykey.asc', 'rb') as infile:
@@ -111,7 +105,7 @@ curkey = None
 
 for packet in data.packets():
 	if isinstance(packet, pgpdump.packet.PublicKeyPacket) and not isinstance(packet, pgpdump.packet.SecretKeyPacket):
-		if packet.name == "Public Key Packet":
+		if type(packet) == pgpdump.packet.PublicKeyPacket:
 			pubkey = PublicKey()
 			pubkeys.append(pubkey)
 			curkey = pubkey
