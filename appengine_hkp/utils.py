@@ -25,14 +25,25 @@ def incremented_array(ra):
 
 	ra = copy.deepcopy(ra)
 	i = 0
+	to_element = lambda x: x
+	from_element = lambda e: e
+
+	if len(ra) > 0:
+		if type(ra[0]) == unicode:
+			to_element = lambda x: unichr(x)
+			from_element = lambda e: ord(e)
+		elif type(ra[0]) == str:
+			to_element = lambda x: chr(x)
+			from_element = lambda e: ord(e)
+
 	try:
 		while True:
 			i -= 1
 			try:
-				ra[i] += 1
+				ra[i] = to_element(from_element(ra[i]) + 1)
 				break
 			except ValueError, e:
-				ra[i] = 0
+				ra[i] = to_element(0)
 	except IndexError, e:
 		return None
 

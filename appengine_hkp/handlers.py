@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import webapp2
+from google.appengine.ext import ndb
 
+import array
 import codecs
 import re
 
@@ -52,7 +54,27 @@ class KeyLookup(webapp2.RequestHandler):
 		return q
 
 	def _query_by_text(self, search, exact=False, fingerprint=False, options=None):
-		raise exceptions.HttpNotImplementedException()
+		q = models.Uid.query(namespace='hkp')
+		# really wish they had a field that said what PART of the uid they wanted to query
+		# they say 'exact' is implementation interpretation, I'll take that to mean the Uid should be exactly equal
+		if exact:
+			q = q.filter(models.Uid.key.id == search)
+		else:
+			# XXX are params unicode string, utf-8, ...?
+			if type(search) == str:
+				search = search.decode('utf-8')
+
+
+			upper_range = utils.incremented_array(array.array('u', search)).tounicode()
+			filters = []
+			#filters.append(ndb.AND(models.Uid.key.id >= search, models.Uid.key.id < upper_range))
+			filters.append(ndb.AND(models.Uid.name >= search, models.Uid.name < upper_range))
+			filters.append(ndb.AND(models.Uid.comment >= search, models.Uid.comment < upper_range))
+			filters.append(ndb.AND(models.Uid.email >= search, models.Uid.email < upper_range))
+
+			q = q.filter(ndb.OR(*filters))
+
+		return q
 
 	def get_op(self, search, exact=False, fingerprint=False, options=None):
 		q = None
