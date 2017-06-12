@@ -81,12 +81,12 @@ class KeyLookup(webapp2.RequestHandler):
 				q = models.KeyBase.query()
 				bin_revkeyid = bytearray(codecs.decode(match.group(1), 'hex')[::-1])
 				if len(bin_revkeyid) == 20:
-					q.filter(models.KeyBase.reversed_fingerprint == str(bin_revkeyid))
+					q = q.filter(models.KeyBase.reversed_fingerprint == str(bin_revkeyid))
 				else:
-					q.filter(models.KeyBase.reversed_fingerprint >= str(bin_revkeyid))
+					q = q.filter(models.KeyBase.reversed_fingerprint >= str(bin_revkeyid))
 					upper_range = _incremented_array(bin_revkeyid)
 					if upper_range is not None:
-						q.filter(models.KeyBase.reversed_fingerprint < str(upper_range))
+						q = q.filter(models.KeyBase.reversed_fingerprint < str(upper_range))
 				key = q.get()
 				if isinstance(key, models.PublicSubkey):
 					key = key.key.parent().get()
@@ -97,6 +97,10 @@ class KeyLookup(webapp2.RequestHandler):
 					#self.response.content_type = 'application/pgp-keys'
 					self.response.content_type = 'text/plain'
 					self.response.write(key.asciiarmored)
+			else:
+				self.response.status = "501 Not Implemented"
+		else:
+			self.response.status = "501 Not Implemented"
 
 app = webapp2.WSGIApplication([
 	('/pks/add', KeyAdd),
