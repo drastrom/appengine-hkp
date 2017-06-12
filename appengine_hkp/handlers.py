@@ -61,15 +61,24 @@ class KeyLookup(webapp2.RequestHandler):
 		else:
 			q = self._query_by_text(search, exact, fingerprint, options)
 
-		key = q.get()
-		if isinstance(key, models.PublicSubkey):
-			key = key.key.parent().get()
+		key_data = bytearray()
+		keys_to_get = []
+		for entity in q.fetch(20):
+			if not isinstance(entity, models.PublicKey):
+				keys_to_get.append(entity.key.parent())
+			else:
+				key_data.extend(entity.key_data)
 
-		if key is None:
+		if len(keys_to_get):
+			for entity in ndb.get_multi(keys_to_get):
+				if entity is not None:
+					key_data.extend(entity.key_data)
+
+		if len(key_data) == 0:
 			raise exceptions.HttpNotFoundException()
-		else:
-			self.response.content_type = 'application/pgp-keys' if not TEST else 'text/plain'
-			self.response.write(key.asciiarmored)
+
+		self.response.content_type = 'application/pgp-keys' if not TEST else 'text/plain'
+		self.response.write(utils.asciiarmor('PUBLIC KEY BLOCK', key_data))
 
 	def index_op(self, search, exact=False, fingerprint=False, options=None):
 		raise exceptions.HttpNotImplementedException()
