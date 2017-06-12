@@ -18,13 +18,13 @@ def load_key(key_asc):
 		if isinstance(packet, pgpdump.packet.PublicKeyPacket) and not isinstance(packet, pgpdump.packet.SecretKeyPacket):
 			if type(packet) == pgpdump.packet.PublicKeyPacket:
 				pubkey = models.PublicKey()
-				entities.append(pubkey)
 				curkey = pubkey
 				# Ugh, BlobProperty wants str, not bytearray
 				pubkey.key_data = str(data.data)
 			else:
 				curkey = models.PublicSubkey()
-				entities.append(curkey)
+
+			entities.append(curkey)
 
 			curkey.reversed_fingerprint = codecs.decode(packet.fingerprint.decode('ascii'), 'hex')[::-1]
 			if type(packet) == pgpdump.packet.PublicKeyPacket:
@@ -42,7 +42,6 @@ def load_key(key_asc):
 			entities.append(curuid)
 			curuid.key = ndb.Key(models.Uid, packet.user)
 			pubkey.uids.append(curuid.key)
-			curuid.uid = packet.user
 
 	ndb.put_multi(entities)
 

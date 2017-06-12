@@ -18,11 +18,9 @@ def _linewrap(string, linelen=64):
 	return "\n".join([string[linelen*i:linelen*i+linelen] for i in range(0,_ceildiv(len(string),linelen))])
 
 class Uid(ndb.Model):
-	uid = ndb.StringProperty('u', indexed=True, required=True)
-
 	_uid_regex = re.compile(r'^([^<(]+)? ?(?:\(([^\)]*)\))? ?<([^>]*)>?')
 	def _parse_uid(self):
-		match = self._uid_regex.match(self.uid)
+		match = self._uid_regex.match(self.key.id())
 		if match:
 			return (match.group(1).strip() if match.group(1) is not None else None, match.group(2).strip() if match.group(2) is not None else None, match.group(3).strip() if match.group(3) is not None else None)
 		else:
