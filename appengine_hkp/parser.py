@@ -6,6 +6,7 @@ import datetime
 
 import pgpdump
 import pgpdump.packet
+import pgpdump.utils
 
 from . import models
 
