@@ -102,9 +102,11 @@ with open('mykey.asc', 'rb') as infile:
 pubkeys = []
 pubkey = None
 curkey = None
+latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 
 for packet in data.packets():
 	if isinstance(packet, pgpdump.packet.PublicKeyPacket) and not isinstance(packet, pgpdump.packet.SecretKeyPacket):
+		latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 		if type(packet) == pgpdump.packet.PublicKeyPacket:
 			pubkey = PublicKey()
 			pubkeys.append(pubkey)
@@ -123,6 +125,18 @@ for packet in data.packets():
 		curuid = Uid()
 		pubkey.uids.append(curuid)
 		curuid.uid = packet.user
+	elif isinstance(packet, pgpdump.packet.SignaturePacket):
+		# self-sig
+		if packet.key_id == pubkey.keyid:
+			if packet.creation_time > latest_selfsig:
+				latest_selfsig = packet.creation_time
+				for subpack in packet.subpackets:
+					if subpack.subtype == 9: # Key Expiration Time
+						curkey.expiration_time = curkey.creation_time + datetime.timedelta(seconds=pgpdump.utils.get_int4(subpack.data, 0))
+					elif subpack.subtype == 27: # Key Flags
+						curkey.flags = subpack.data[0]
+					elif subpack.subtype == 23: # Key Server Preferences (do we need these?)
+						pass
 
 pp.pprint([pubkey.__dict__ for pubkey in pubkeys])
 print("Real fingerprints")
