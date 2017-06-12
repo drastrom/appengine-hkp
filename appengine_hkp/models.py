@@ -10,12 +10,7 @@ import struct
 
 import pgpdump.utils
 
-# see https://stackoverflow.com/a/17511341
-def _ceildiv(a, b):
-	return -(-a // b)
-
-def _linewrap(string, linelen=64):
-	return "\n".join([string[linelen*i:linelen*i+linelen] for i in range(0,_ceildiv(len(string),linelen))])
+from . import utils
 
 class Uid(ndb.Model):
 	_uid_regex = re.compile(r'^([^<(]+)? ?(?:\(([^\)]*)\))? ?<([^>]*)>?')
@@ -69,5 +64,5 @@ class PublicKey(KeyBase):
 
 	@property
 	def asciiarmored(self):
-		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(_linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(self.key_data)))[1:]))
+		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(utils.linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(self.key_data)))[1:]))
 
