@@ -2,6 +2,7 @@
 from google.appengine.ext import ndb
 
 import codecs
+import datetime
 
 import pgpdump
 import pgpdump.packet
@@ -13,9 +14,11 @@ def load_key(key_asc):
 	entities = []
 	pubkey = None
 	curkey = None
+	latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 
 	for packet in data.packets():
 		if isinstance(packet, pgpdump.packet.PublicKeyPacket) and not isinstance(packet, pgpdump.packet.SecretKeyPacket):
+			latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 			if type(packet) == pgpdump.packet.PublicKeyPacket:
 				pubkey = models.PublicKey()
 				curkey = pubkey
@@ -42,6 +45,18 @@ def load_key(key_asc):
 			entities.append(curuid)
 			curuid.key = ndb.Key(models.Uid, packet.user, namespace='hkp')
 			pubkey.uids.append(curuid.key)
+		elif isinstance(packet, pgpdump.packet.SignaturePacket):
+			# self-sig
+			if packet.key_id == pubkey.keyid:
+				if packet.creation_time > latest_selfsig:
+					latest_selfsig = packet.creation_time
+					for subpack in packet.subpackets:
+						if subpack.subtype == 9: # Key Expiration Time
+							curkey.expiration_time = curkey.creation_time + datetime.timedelta(seconds=pgpdump.utils.get_int4(subpack.data, 0))
+						elif subpack.subtype == 27: # Key Flags
+							curkey.flags = subpack.data[0]
+						elif subpack.subtype == 23: # Key Server Preferences (do we need these?)
+							pass
 
 	ndb.put_multi(entities)
 

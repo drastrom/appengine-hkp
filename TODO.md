@@ -5,4 +5,4 @@
 - [ ] get op return multiple keys
 - [ ] text search
 - [ ] add op merge key (and nm option to prevent it)
-- [ ] load remaining properties (key expiration time, key flags) from latest self-sig
+- [x] load remaining properties (key expiration time, key flags) from latest self-sig
