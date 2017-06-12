@@ -34,29 +34,42 @@ class KeyAdd(webapp2.RequestHandler):
 
 _keyid_regex = re.compile(r'^(?:0[Xx])?([0-9a-fA-F]{8}|[0-9a-fA-F]{16}|[0-9a-fA-F]{40})$')
 class KeyLookup(webapp2.RequestHandler):
-	def get_op(self, search, exact=False, fingerprint=False, options=None):
-		match = _keyid_regex.match(search)
-		if match:
-			q = models.KeyBase.query(namespace='hkp')
-			bin_revkeyid = bytearray(codecs.decode(match.group(1), 'hex')[::-1])
-			if len(bin_revkeyid) == 20:
-				q = q.filter(models.KeyBase.reversed_fingerprint == str(bin_revkeyid))
-			else:
-				q = q.filter(models.KeyBase.reversed_fingerprint >= str(bin_revkeyid))
-				upper_range = utils.incremented_array(bin_revkeyid)
-				if upper_range is not None:
-					q = q.filter(models.KeyBase.reversed_fingerprint < str(upper_range))
-			key = q.get()
-			if isinstance(key, models.PublicSubkey):
-				key = key.key.parent().get()
 
-			if key is None:
-				raise exceptions.HttpNotFoundException()
-			else:
-				self.response.content_type = 'application/pgp-keys' if not TEST else 'text/plain'
-				self.response.write(key.asciiarmored)
+	def _query_by_keyid(self, search, exact=False, fingerprint=False, options=None):
+		match = _keyid_regex.match(search)
+		if not match:
+			raise exceptions.HttpBadRequestException()
+
+		q = models.KeyBase.query(namespace='hkp')
+		bin_revkeyid = bytearray(codecs.decode(match.group(1), 'hex')[::-1])
+		if len(bin_revkeyid) == 20:
+			q = q.filter(models.KeyBase.reversed_fingerprint == str(bin_revkeyid))
 		else:
-			raise exceptions.HttpNotImplementedException()
+			q = q.filter(models.KeyBase.reversed_fingerprint >= str(bin_revkeyid))
+			upper_range = utils.incremented_array(bin_revkeyid)
+			if upper_range is not None:
+				q = q.filter(models.KeyBase.reversed_fingerprint < str(upper_range))
+		return q
+
+	def _query_by_text(self, search, exact=False, fingerprint=False, options=None):
+		raise exceptions.HttpNotImplementedException()
+
+	def get_op(self, search, exact=False, fingerprint=False, options=None):
+		q = None
+		if len(search) > 2 and search[:2].upper() == "0X":
+			q = self._query_by_keyid(search, exact, fingerprint, options)
+		else:
+			q = self._query_by_text(search, exact, fingerprint, options)
+
+		key = q.get()
+		if isinstance(key, models.PublicSubkey):
+			key = key.key.parent().get()
+
+		if key is None:
+			raise exceptions.HttpNotFoundException()
+		else:
+			self.response.content_type = 'application/pgp-keys' if not TEST else 'text/plain'
+			self.response.write(key.asciiarmored)
 
 	def index_op(self, search, exact=False, fingerprint=False, options=None):
 		raise exceptions.HttpNotImplementedException()
