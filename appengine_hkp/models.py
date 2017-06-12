@@ -11,9 +11,11 @@ import struct
 from . import utils
 
 class Uid(ndb.Model):
+	uid = ndb.StringProperty('u', indexed=True, required=True)
+
 	_uid_regex = re.compile(r'^([^<(]+)? ?(?:\(([^\)]*)\))? ?<([^>]*)>?')
 	def _parse_uid(self):
-		match = self._uid_regex.match(self.key.id())
+		match = self._uid_regex.match(self.uid)
 		if match:
 			return (match.group(1).strip() if match.group(1) is not None else None, match.group(2).strip() if match.group(2) is not None else None, match.group(3).strip() if match.group(3) is not None else None)
 		else:

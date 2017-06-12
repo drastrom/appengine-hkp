@@ -27,7 +27,6 @@ def load_key(key_asc):
 				pubkey.key_data = str(data.data)
 			else:
 				curkey = models.PublicSubkey()
-
 			entities.append(curkey)
 
 			curkey.reversed_fingerprint = codecs.decode(packet.fingerprint.decode('ascii'), 'hex')[::-1]
@@ -46,6 +45,7 @@ def load_key(key_asc):
 			entities.append(curuid)
 			curuid.key = ndb.Key(models.Uid, packet.user, parent=pubkey.key, namespace='hkp')
 			pubkey.uids.append(curuid.key)
+			curuid.uid = packet.user
 		elif isinstance(packet, pgpdump.packet.SignaturePacket):
 			# self-sig
 			if packet.key_id == pubkey.keyid:
