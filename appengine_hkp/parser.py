@@ -44,7 +44,7 @@ def load_key(key_asc):
 		elif isinstance(packet, pgpdump.packet.UserIDPacket):
 			curuid = models.Uid()
 			entities.append(curuid)
-			curuid.key = ndb.Key(models.Uid, packet.user, namespace='hkp')
+			curuid.key = ndb.Key(models.Uid, packet.user, parent=pubkey.key, namespace='hkp')
 			pubkey.uids.append(curuid.key)
 		elif isinstance(packet, pgpdump.packet.SignaturePacket):
 			# self-sig
