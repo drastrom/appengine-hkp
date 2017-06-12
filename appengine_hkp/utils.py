@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+import base64
 import copy
+import pgpdump.utils
+import struct
 
 def incremented_array(ra):
 	"""Return an array which is lexically greater than the passed in array
@@ -42,4 +45,7 @@ def ceildiv(a, b):
 
 def linewrap(string, linelen=64):
 	return "\n".join([string[linelen*i:linelen*(i+1)] for i in range(0,ceildiv(len(string),linelen))])
+
+def asciiarmor(armor_header_type, data):
+	return "-----BEGIN PGP {0}-----\n\n{1}\n={2}\n-----END PGP {0}-----".format(armor_header_type, linewrap(base64.b64encode(data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(data)))[1:]))
 

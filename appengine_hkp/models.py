@@ -8,8 +8,6 @@ import codecs
 import re
 import struct
 
-import pgpdump.utils
-
 from . import utils
 
 class Uid(ndb.Model):
@@ -64,5 +62,5 @@ class PublicKey(KeyBase):
 
 	@property
 	def asciiarmored(self):
-		return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n{}\n={}\n-----END PGP PUBLIC KEY BLOCK-----".format(utils.linewrap(base64.b64encode(self.key_data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(self.key_data)))[1:]))
+		return utils.asciiarmor('PUBLIC KEY BLOCK', self.key_data)
 
