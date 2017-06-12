@@ -6,8 +6,8 @@ vendor.add(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 # Add python-pgpdump git submodule
 vendor.add(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib', 'python-pgpdump'))
 
-#def webapp_add_wsgi_middleware(app):
-#	from google.appengine.ext.appstats import recording
-#	app = recording.appstats_wsgi_middleware(app)
-#	return app
+def webapp_add_wsgi_middleware(app):
+	from google.appengine.ext.appstats import recording
+	app = recording.appstats_wsgi_middleware(app)
+	return app
 
