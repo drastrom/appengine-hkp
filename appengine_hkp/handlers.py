@@ -78,7 +78,7 @@ class KeyLookup(webapp2.RequestHandler):
 		if op == "get":
 			match = _keyid_regex.match(search)
 			if match:
-				q = models.KeyBase.query()
+				q = models.KeyBase.query(namespace='hkp')
 				bin_revkeyid = bytearray(codecs.decode(match.group(1), 'hex')[::-1])
 				if len(bin_revkeyid) == 20:
 					q = q.filter(models.KeyBase.reversed_fingerprint == str(bin_revkeyid))
