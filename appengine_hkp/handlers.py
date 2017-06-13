@@ -130,12 +130,12 @@ class KeyLookup(webapp2.RequestHandler):
 			op_func = None
 			try:
 				op_func = self._operation_mapping[op]
-			except KeyError, e:
+			except KeyError as e:
 				raise exceptions.HttpNotImplementedException()
 
 			op_func(self, search, exact, fingerprint, options)
 
-		except exceptions.HttpStatusException, e:
+		except exceptions.HttpStatusException as e:
 			self.response.status = e.status_line
 
 app = webapp2.WSGIApplication([

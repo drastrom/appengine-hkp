@@ -42,9 +42,9 @@ def incremented_array(ra):
 			try:
 				ra[i] = to_element(from_element(ra[i]) + 1)
 				break
-			except ValueError, e:
+			except ValueError as e:
 				ra[i] = to_element(0)
-	except IndexError, e:
+	except IndexError as e:
 		return None
 
 	return ra
@@ -58,5 +58,5 @@ def linewrap(string, linelen=64):
 	return "\n".join([string[linelen*i:linelen*(i+1)] for i in range(0,ceildiv(len(string),linelen))])
 
 def asciiarmor(armor_header_type, data):
-	return "-----BEGIN PGP {0}-----\n\n{1}\n={2}\n-----END PGP {0}-----".format(armor_header_type, linewrap(base64.b64encode(data)), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(data)))[1:]))
+	return "-----BEGIN PGP {0}-----\n\n{1}\n={2}\n-----END PGP {0}-----".format(armor_header_type, linewrap(base64.b64encode(data).decode('ascii')), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(data)))[1:]).decode('ascii'))
 

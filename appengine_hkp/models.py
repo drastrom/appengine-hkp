@@ -3,10 +3,8 @@
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
 
-import base64
 import codecs
 import re
-import struct
 
 from . import utils
 

@@ -12,7 +12,6 @@ pp = pprint.PrettyPrinter()
 import datetime
 import re
 import codecs
-import base64
 import pgpdump.utils
 import struct
 
@@ -73,12 +72,6 @@ class KeyBase(object):
 	@property
 	def shortkeyid(self):
 		return self.fingerprint_suffix(4)
-
-	@property
-	def integerid(self):
-		# Ugh, 1 <= id < 2**63
-		return struct.unpack('>Q', self.reversed_fingerprint[7::-1])[0] & 0x7FFFFFFFFFFFFFFF
-
 
 class PublicSubkey(KeyBase):
 	pass
@@ -145,5 +138,4 @@ pp.pprint([pubkey.keyid for pubkey in pubkeys])
 pp.pprint([pubkey.shortkeyid for pubkey in pubkeys])
 print("Uid parts")
 pp.pprint([uid._parse_uid() for uid in pubkey.uids for pubkey in pubkeys])
-print pubkeys[0].asciiarmored
-print pubkeys[0].integerid
+print(pubkeys[0].asciiarmored)
