@@ -55,15 +55,17 @@ class KeyLookup(webapp2.RequestHandler):
 
 	def _query_by_text(self, search, exact=False, fingerprint=False, options=None):
 		q = models.Uid.query(namespace='hkp')
+		# XXX are params unicode string, utf-8, ...?
+		if type(search) == str:
+			search = search.decode('utf-8')
+
+		search = search.lower()
+
 		# really wish they had a field that said what PART of the uid they wanted to query
 		# they say 'exact' is implementation interpretation, I'll take that to mean the Uid should be exactly equal
 		if exact:
-			q = q.filter(models.Uid.key.id == search)
+			q = q.filter(models.Uid.uid == search)
 		else:
-			# XXX are params unicode string, utf-8, ...?
-			if type(search) == str:
-				search = search.decode('utf-8')
-
 			upper_range = utils.incremented_array(array.array('u', search)).tounicode()
 			filters = []
 			filters.append(ndb.AND(models.Uid.uid >= search, models.Uid.uid < upper_range))

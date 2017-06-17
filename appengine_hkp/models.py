@@ -3,6 +3,7 @@
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb import polymodel
 
+import base64
 import codecs
 import re
 
@@ -47,9 +48,8 @@ class KeyBase(polymodel.PolyModel):
 		return self._fingerprint_suffix(4)
 
 	@property
-	def integerid(self):
-		# Ugh, 1 <= id < 2**63
-		return struct.unpack('>Q', self.reversed_fingerprint[7::-1])[0] & 0x7FFFFFFFFFFFFFFF
+	def stringid(self):
+		return base64.b64encode(self.reversed_fingerprint[::-1])
 
 
 class PublicSubkey(KeyBase):

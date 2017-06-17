@@ -31,9 +31,9 @@ def load_key(key_asc):
 
 			curkey.reversed_fingerprint = codecs.decode(packet.fingerprint.decode('ascii'), 'hex')[::-1]
 			if type(packet) == pgpdump.packet.PublicKeyPacket:
-				curkey.key = ndb.Key(models.PublicKey, curkey.integerid, namespace='hkp')
+				curkey.key = ndb.Key(models.PublicKey, curkey.stringid, namespace='hkp')
 			else:
-				curkey.key = ndb.Key(models.PublicSubkey, curkey.integerid, parent=pubkey.key, namespace='hkp')
+				curkey.key = ndb.Key(models.PublicSubkey, curkey.stringid, parent=pubkey.key, namespace='hkp')
 				pubkey.subkeys.append(curkey.key)
 
 			curkey.creation_time = packet.creation_time
@@ -45,7 +45,7 @@ def load_key(key_asc):
 			entities.append(curuid)
 			curuid.key = ndb.Key(models.Uid, packet.user, parent=pubkey.key, namespace='hkp')
 			pubkey.uids.append(curuid.key)
-			curuid.uid = packet.user
+			curuid.uid = packet.user.lower()
 		elif isinstance(packet, pgpdump.packet.SignaturePacket):
 			# self-sig
 			if packet.key_id == pubkey.keyid:
