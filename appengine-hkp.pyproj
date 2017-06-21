@@ -5,8 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{e733c9f8-23d8-47a1-b8c1-d0d47db8b249}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>test.py</StartupFile>
-    <SearchPath>..\..\Program Files\Google\Cloud SDK\google-cloud-sdk\platform\google_appengine\;..\..\Program Files\Google\Cloud SDK\google-cloud-sdk\platform\google_appengine\lib\</SearchPath>
+    <StartupFile>d:\Program Files\Google\Cloud SDK\google-cloud-sdk\platform\google_appengine\dev_appserver.py</StartupFile>
+    <SearchPath>D:\Program Files\Google\Cloud SDK\google-cloud-sdk\platform\google_appengine\;D:\Program Files\Google\Cloud SDK\google-cloud-sdk\platform\google_appengine\lib\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
@@ -15,6 +15,9 @@
     <InterpreterVersion />
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
+    <CommandLineArguments>--python_startup_script=".\pydev_startup.py" --automatic_restart=no --max_module_instances="default:1" -A hkp-test ".\app.yaml"</CommandLineArguments>
+    <Environment>
+    </Environment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
