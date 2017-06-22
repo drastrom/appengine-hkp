@@ -22,3 +22,14 @@ includes:
 libraries:
 - name: webapp2
   version: "2.5.2"
+
+skip_files:
+#defaults
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+#ptvs files
+- ^(.*/)?pydev_startup\.py$
+- ^(.*/)?.*\.(sln|pyproj)$
