@@ -48,6 +48,7 @@
     <Compile Include="lib\python-pgpdump\pgpdump\__main__.py" />
     <Compile Include="lib\python-pgpdump\setup.py" />
     <Compile Include="main.py" />
+    <Compile Include="pydev_startup.py" />
     <Compile Include="test.py" />
   </ItemGroup>
   <ItemGroup>
