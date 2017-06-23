@@ -1,0 +1,13 @@
+{
+    "version": "0.1.0",
+    "command": "python",
+    "isShellCommand": true,
+    "args": [
+        "D:/Program Files/Google/Cloud SDK/google-cloud-sdk/platform/google_appengine/dev_appserver.py",
+        "--python_startup_script=${workspaceRoot}/pydev_startup.py",
+        "--automatic_restart=no",
+        "--max_module_instances=default:1",
+        "${workspaceRoot}/app.yaml"
+    ],
+    "showOutput": "always"
+}
