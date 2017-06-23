@@ -30,6 +30,11 @@ skip_files:
 - ^(.*/)?.*\.py[co]$
 - ^(.*/)?.*/RCS/.*$
 - ^(.*/)?\..*$
+#python-pgpdump
+- ^(.*/)?.*/testdata/.*$
+- ^(.*/)?.*(COPYRIGHT|README|MANIFEST.in)$
+#doc files
+- ^(.*/)?.*\.md$
 #ptvs files
 - ^(.*/)?pydev_startup\.py$
 - ^(.*/)?.*\.(sln|pyproj)$
