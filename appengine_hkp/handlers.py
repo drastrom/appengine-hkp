@@ -4,8 +4,10 @@ import webapp2
 from google.appengine.ext import ndb
 
 import array
+import datetime
 import codecs
 import re
+import urllib
 
 from . import exceptions
 from . import models
@@ -13,6 +15,7 @@ from . import parser
 from . import utils
 
 TEST = True
+epoch = datetime.datetime.utcfromtimestamp(0)
 
 class KeyAdd(webapp2.RequestHandler):
 	def post(self):
@@ -35,6 +38,7 @@ class KeyAdd(webapp2.RequestHandler):
 
 
 _keyid_regex = re.compile(r'^(?:0[Xx])?([0-9a-fA-F]{8}|[0-9a-fA-F]{16}|[0-9a-fA-F]{40})$')
+_algo_mapping = {'rsa': 1, 'dsa': 17, 'elg': 16, 'ec': 18, 'ecdsa': 19, 'dh': 21}
 class KeyLookup(webapp2.RequestHandler):
 
 	def _query_by_keyid(self, search, exact=False, fingerprint=False, options=None):
@@ -104,7 +108,47 @@ class KeyLookup(webapp2.RequestHandler):
 		self.response.write(utils.asciiarmor('PUBLIC KEY BLOCK', key_data))
 
 	def index_op(self, search, exact=False, fingerprint=False, options=None):
-		raise exceptions.HttpNotImplementedException()
+		q = None
+		if len(search) > 2 and search[:2].upper() == "0X":
+			q = self._query_by_keyid(search, exact, fingerprint, options)
+		else:
+			q = self._query_by_text(search, exact, fingerprint, options)
+
+		keys = []
+		keys_to_get = []
+		uids_to_get = []
+		for entity in q.fetch(20):
+			if isinstance(entity, models.PublicKey):
+				keys.append(entity)
+				if entity.uids:
+					uids_to_get.extend(entity.uids)
+			else:
+				keys_to_get.append(entity.key.parent())
+
+		if len(keys_to_get):
+			for entity in ndb.get_multi(keys_to_get):
+				if entity is not None:
+					keys.append(entity)
+					if entity.uids:
+						uids_to_get.extend(entity.uids)
+
+		if len(uids_to_get):
+			uids_list = filter(lambda x: x is not None, ndb.get_multi(uids_to_get))
+			uids = dict(zip(map(lambda x: x.key, uids_list), uids_list))
+
+		self.response.content_type = 'text/plain'
+		self.response.write("info:1:{0}\n".format(len(keys)))
+		now = datetime.datetime.utcnow()
+		for key in keys:
+			# TODO switch algorithm_type to store raw_pub_algorithm_type?
+			self.response.write(':'.join(("pub", key.fingerprint, str(_algo_mapping[key.algorithm_type]), str(key.bitlen), str(int((key.creation_time - epoch).total_seconds())) if key.creation_time else "", str(int((key.expiration_time - epoch).total_seconds())) if key.expiration_time else "", "e" if key.expiration_time and key.expiration_time <= now else "")) + "\n")
+			if key.uids:
+				for uid_key in key.uids:
+					uid = uids[uid_key]
+					uid_str = uid.key.id()
+					if type(uid_str) == unicode:
+						uid_str = uid_str.encode("utf-8")
+					self.response.write(':'.join(("uid", urllib.quote(uid_str), str(int((uid.creation_time - epoch).total_seconds())) if uid.creation_time else "", str(int((uid.expiration_time - epoch).total_seconds())) if uid.expiration_time else "", "e" if uid.expiration_time and uid.expiration_time <= now else "")) + "\n")
 
 	def vindex_op(self, search, exact=False, fingerprint=False, options=None):
 		raise exceptions.HttpNotImplementedException()
