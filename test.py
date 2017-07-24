@@ -25,6 +25,8 @@ class Uid(object):
 
 	def __init__(self):
 		self.uid = ""
+		self.creation_time = datetime.datetime.utcfromtimestamp(0)
+		self.expiration_time = None
 
 	@property
 	def name(self):
@@ -95,17 +97,23 @@ with open('mykey.asc', 'rb') as infile:
 pubkeys = []
 pubkey = None
 curkey = None
-latest_selfsig = datetime.datetime.utcfromtimestamp(0)
+curuid = None
+subkey_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
+pubkey_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
+uid_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 
 for packet in data.packets():
+	print str(type(packet))
+	pp.pprint(packet.__dict__)
 	if isinstance(packet, pgpdump.packet.PublicKeyPacket) and not isinstance(packet, pgpdump.packet.SecretKeyPacket):
-		latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 		if type(packet) == pgpdump.packet.PublicKeyPacket:
+			pubkey_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 			pubkey = PublicKey()
 			pubkeys.append(pubkey)
 			curkey = pubkey
 			pubkey.key_data = data.data
 		else:
+			subkey_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 			curkey = PublicSubkey()
 			pubkey.subkeys.append(curkey)
 
@@ -115,21 +123,40 @@ for packet in data.packets():
 		curkey.algorithm_type = packet.pub_algorithm_type
 		curkey.bitlen = packet.modulus_bitlen
 	elif isinstance(packet, pgpdump.packet.UserIDPacket):
+		uid_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 		curuid = Uid()
 		pubkey.uids.append(curuid)
 		curuid.uid = packet.user
 	elif isinstance(packet, pgpdump.packet.SignaturePacket):
+		pp.pprint([subpack.__dict__ for subpack in packet.subpackets])
 		# self-sig
 		if packet.key_id == pubkey.keyid:
-			if packet.creation_time > latest_selfsig:
-				latest_selfsig = packet.creation_time
-				for subpack in packet.subpackets:
-					if subpack.subtype == 9: # Key Expiration Time
-						curkey.expiration_time = curkey.creation_time + datetime.timedelta(seconds=pgpdump.utils.get_int4(subpack.data, 0))
-					elif subpack.subtype == 27: # Key Flags
-						curkey.flags = subpack.data[0]
-					elif subpack.subtype == 23: # Key Server Preferences (do we need these?)
-						pass
+			# At this point only interested in UID, subkey, or sig directly on key
+			# TODO should record revocation as well
+			if packet.raw_sig_type in (0x10, 0x11, 0x12, 0x13, 0x18, 0x1F):
+				# From RFC4880:
+				#  Subpackets that appear in a certification self-signature
+				#  apply to the user name, and subpackets that appear in the subkey
+				#  self-signature apply to the subkey.  Lastly, subpackets on the
+				#  direct-key signature apply to the entire key.
+				#
+				# NOTE while the certification subpackets should apply to the user name,
+				# not the entire key, gpg seems to put properties of the public key in the
+				# certification signature(s).  So, no else here...
+				if packet.raw_sig_type >= 0x10 and packet.raw_sig_type <= 0x13 and uid_latest_selfsig < packet.creation_time:
+					uid_latest_selfsig = packet.creation_time
+					curuid.creation_time = packet.creation_time
+					curuid.expiration_time = packet.expiration_time
+				if (packet.raw_sig_type == 0x18 and subkey_latest_selfsig < packet.creation_time) or (packet.raw_sig_type != 0x18 and pubkey_latest_selfsig < packet.creation_time):
+					# Should modify pubkey even if the direct-key sig packet happens after subkeys
+					modkey = curkey if packet.raw_sig_type == 0x18 else pubkey
+					for subpack in packet.subpackets:
+						if subpack.subtype == 9: # Key Expiration Time
+							modkey.expiration_time = modkey.creation_time + datetime.timedelta(seconds=pgpdump.utils.get_int4(subpack.data, 0))
+						elif subpack.subtype == 27: # Key Flags
+							modkey.flags = subpack.data[0]
+						elif subpack.subtype == 23: # Key Server Preferences (do we need these?)
+							pass
 
 pp.pprint([pubkey.__dict__ for pubkey in pubkeys])
 print("Real fingerprints")

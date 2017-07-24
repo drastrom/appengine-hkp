@@ -23,6 +23,8 @@ class Uid(ndb.Model):
 	name = ndb.ComputedProperty(lambda self: self._parse_uid()[0], 'n', indexed=True)
 	comment = ndb.ComputedProperty(lambda self: self._parse_uid()[1], 'c', indexed=True)
 	email = ndb.ComputedProperty(lambda self: self._parse_uid()[2], 'e', indexed=True)
+	creation_time = ndb.DateTimeProperty('r', indexed=False)
+	expiration_time = ndb.DateTimeProperty('x', indexed=False)
 
 class KeyBase(polymodel.PolyModel):
 	reversed_fingerprint = ndb.BlobProperty('rfp', indexed=True, required=True)
