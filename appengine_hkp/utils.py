@@ -66,9 +66,5 @@ epoch = datetime.datetime.utcfromtimestamp(0)
 def datetime_to_unix_time(dt):
 	return int((dt - epoch).total_seconds())
 
-_now = None
-def is_expired(obj):
-	global _now
-	if _now is None:
-		_now = datetime.datetime.utcnow()
-	return obj.expiration_time and obj.expiration_time <= _now
+def is_expired(obj, now):
+	return obj.expiration_time and obj.expiration_time <= now

@@ -5,6 +5,7 @@ from google.appengine.ext import ndb
 
 import array
 import codecs
+import datetime
 import re
 import urllib
 
@@ -139,6 +140,7 @@ class KeyLookup(webapp2.RequestHandler):
 
 		self.response.content_type = 'text/plain'
 		self.response.write("info:1:{0}\n".format(len(keys)))
+		now = datetime.datetime.utcnow()
 		for key in keys:
 			# TODO switch algorithm_type to store raw_pub_algorithm_type?
 			self.response.write(':'.join(("pub",
@@ -147,7 +149,7 @@ class KeyLookup(webapp2.RequestHandler):
 								 str(key.bitlen),
 								 str(utils.datetime_to_unix_time(key.creation_time)) if key.creation_time else "",
 								 str(utils.datetime_to_unix_time(key.expiration_time)) if key.expiration_time else "",
-								 "e" if utils.is_expired(key) else "")) + "\n")
+								 "e" if utils.is_expired(key, now) else "")) + "\n")
 			if key.uids:
 				for uid_key in key.uids:
 					uid = uids[uid_key]
@@ -158,7 +160,7 @@ class KeyLookup(webapp2.RequestHandler):
 								   urllib.quote(uid_str),
 								   str(utils.datetime_to_unix_time(uid.creation_time)) if uid.creation_time else "",
 								   str(utils.datetime_to_unix_time(uid.expiration_time)) if uid.expiration_time else "",
-								   "e" if utils.is_expired(uid) else "")) + "\n")
+								   "e" if utils.is_expired(uid, now) else "")) + "\n")
 
 	def vindex_op(self, search, exact=False, fingerprint=False, options=None):
 		raise exceptions.HttpNotImplementedException()
