@@ -4,7 +4,6 @@ import webapp2
 from google.appengine.ext import ndb
 
 import array
-import datetime
 import codecs
 import re
 import urllib
@@ -15,7 +14,6 @@ from . import parser
 from . import utils
 
 TEST = True
-epoch = datetime.datetime.utcfromtimestamp(0)
 
 class KeyAdd(webapp2.RequestHandler):
 	def post(self):
@@ -117,38 +115,50 @@ class KeyLookup(webapp2.RequestHandler):
 		keys = []
 		keys_to_get = []
 		uids_to_get = []
+		uids = {}
 		for entity in q.fetch(20):
 			if isinstance(entity, models.PublicKey):
 				keys.append(entity)
 				if entity.uids:
-					uids_to_get.extend(entity.uids)
+					uids_to_get.extend(filter(lambda x: x not in uids and x not in uids_to_get, entity.uids))
 			else:
 				keys_to_get.append(entity.key.parent())
+				if isinstance(entity, models.Uid):
+					uids[entity.key] = entity
 
 		if len(keys_to_get):
 			for entity in ndb.get_multi(keys_to_get):
 				if entity is not None:
 					keys.append(entity)
 					if entity.uids:
-						uids_to_get.extend(entity.uids)
+						uids_to_get.extend(filter(lambda x: x not in uids and x not in uids_to_get, entity.uids))
 
 		if len(uids_to_get):
 			uids_list = filter(lambda x: x is not None, ndb.get_multi(uids_to_get))
-			uids = dict(zip(map(lambda x: x.key, uids_list), uids_list))
+			uids.update(zip(map(lambda x: x.key, uids_list), uids_list))
 
 		self.response.content_type = 'text/plain'
 		self.response.write("info:1:{0}\n".format(len(keys)))
-		now = datetime.datetime.utcnow()
 		for key in keys:
 			# TODO switch algorithm_type to store raw_pub_algorithm_type?
-			self.response.write(':'.join(("pub", key.fingerprint, str(_algo_mapping[key.algorithm_type]), str(key.bitlen), str(int((key.creation_time - epoch).total_seconds())) if key.creation_time else "", str(int((key.expiration_time - epoch).total_seconds())) if key.expiration_time else "", "e" if key.expiration_time and key.expiration_time <= now else "")) + "\n")
+			self.response.write(':'.join(("pub",
+								 key.fingerprint,
+								 str(_algo_mapping[key.algorithm_type]),
+								 str(key.bitlen),
+								 str(utils.datetime_to_unix_time(key.creation_time)) if key.creation_time else "",
+								 str(utils.datetime_to_unix_time(key.expiration_time)) if key.expiration_time else "",
+								 "e" if utils.is_expired(key) else "")) + "\n")
 			if key.uids:
 				for uid_key in key.uids:
 					uid = uids[uid_key]
 					uid_str = uid.key.id()
 					if type(uid_str) == unicode:
 						uid_str = uid_str.encode("utf-8")
-					self.response.write(':'.join(("uid", urllib.quote(uid_str), str(int((uid.creation_time - epoch).total_seconds())) if uid.creation_time else "", str(int((uid.expiration_time - epoch).total_seconds())) if uid.expiration_time else "", "e" if uid.expiration_time and uid.expiration_time <= now else "")) + "\n")
+					self.response.write(':'.join(("uid",
+								   urllib.quote(uid_str),
+								   str(utils.datetime_to_unix_time(uid.creation_time)) if uid.creation_time else "",
+								   str(utils.datetime_to_unix_time(uid.expiration_time)) if uid.expiration_time else "",
+								   "e" if utils.is_expired(uid) else "")) + "\n")
 
 	def vindex_op(self, search, exact=False, fingerprint=False, options=None):
 		raise exceptions.HttpNotImplementedException()

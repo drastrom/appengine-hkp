@@ -2,6 +2,7 @@
 
 import base64
 import copy
+import datetime
 import pgpdump.utils
 import struct
 
@@ -60,3 +61,14 @@ def linewrap(string, linelen=64):
 def asciiarmor(armor_header_type, data):
 	return "-----BEGIN PGP {0}-----\n\n{1}\n={2}\n-----END PGP {0}-----".format(armor_header_type, linewrap(base64.b64encode(data).decode('ascii')), base64.b64encode(struct.pack(">I", pgpdump.utils.crc24(bytearray(data)))[1:]).decode('ascii'))
 
+epoch = datetime.datetime.utcfromtimestamp(0)
+
+def datetime_to_unix_time(dt):
+	return int((dt - epoch).total_seconds())
+
+_now = None
+def is_expired(obj):
+	global _now
+	if _now is None:
+		_now = datetime.datetime.utcnow()
+	return obj.expiration_time and obj.expiration_time <= _now
