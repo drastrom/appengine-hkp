@@ -1,8 +1,8 @@
-- [ ] index op
+- [x] index op
 - [ ] vindex op
 - [ ] fingerprint=on for index/vindex
-- [ ] exact=on for index/vindex/get
+- [x] exact=on for index/vindex/get
 - [x] get op return multiple keys
-- [ ] text search
+- [x] text search
 - [ ] add op merge key (and nm option to prevent it)
 - [x] load remaining properties (key expiration time, key flags) from latest self-sig
