@@ -9,6 +9,7 @@ import pgpdump.packet
 import pgpdump.utils
 
 from . import models
+from . import uni_utils
 
 def load_key(key_asc):
 	data = pgpdump.AsciiData(key_asc)
@@ -50,7 +51,7 @@ def load_key(key_asc):
 			entities.append(curuid)
 			curuid.key = ndb.Key(models.Uid, packet.user, parent=pubkey.key, namespace='hkp')
 			pubkey.uids.append(curuid.key)
-			curuid.uid = packet.user.lower()
+			curuid.uid = uni_utils.compatibility_casefold(packet.user)
 		elif isinstance(packet, pgpdump.packet.SignaturePacket):
 			# self-sig
 			if packet.key_id == pubkey.keyid:

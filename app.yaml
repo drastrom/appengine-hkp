@@ -33,6 +33,9 @@ skip_files:
 #python-pgpdump
 - ^(.*/)?.*/testdata/.*$
 - ^(.*/)?.*(COPYRIGHT|README|MANIFEST.in)$
+#py2casefold
+- ^(.*/)?.*(LICENSE|README.rst)$
+- ^(.*/)?.*/tests/.*$
 #doc files
 - ^(.*/)?.*\.md$
 #ptvs files

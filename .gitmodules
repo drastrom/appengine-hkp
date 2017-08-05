@@ -1,3 +1,6 @@
 [submodule "lib/python-pgpdump"]
 	path = lib/python-pgpdump
 	url = https://github.com/toofishes/python-pgpdump
+[submodule "lib/py2casefold"]
+	path = lib/py2casefold
+	url = https://github.com/rwarren/py2casefold.git

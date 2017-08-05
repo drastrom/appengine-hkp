@@ -12,6 +12,7 @@ import urllib
 from . import exceptions
 from . import models
 from . import parser
+from . import uni_utils
 from . import utils
 
 TEST = True
@@ -62,7 +63,7 @@ class KeyLookup(webapp2.RequestHandler):
 		if type(search) == str:
 			search = search.decode('utf-8')
 
-		search = search.lower()
+		search = uni_utils.compatibility_casefold(search)
 
 		# really wish they had a field that said what PART of the uid they wanted to query
 		# they say 'exact' is implementation interpretation, I'll take that to mean the Uid should be exactly equal

@@ -29,6 +29,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <Content Include="lib\py2casefold\py2casefold\CaseFolding.txt" />
+    <Content Include="lib\py2casefold\py2casefold\VERSION" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="appengine_config.py" />
@@ -36,10 +38,13 @@
     <Compile Include="appengine_hkp\handlers.py" />
     <Compile Include="appengine_hkp\models.py" />
     <Compile Include="appengine_hkp\parser.py" />
+    <Compile Include="appengine_hkp\uni_utils.py" />
     <Compile Include="appengine_hkp\utils.py" />
     <Compile Include="appengine_hkp\__init__.py" />
     <Compile Include="cmdline_config.py" />
     <Compile Include="keyloader.py" />
+    <Compile Include="lib\py2casefold\py2casefold\__init__.py" />
+    <Compile Include="lib\py2casefold\setup.py" />
     <Compile Include="lib\python-pgpdump\pgpdump\data.py" />
     <Compile Include="lib\python-pgpdump\pgpdump\packet.py" />
     <Compile Include="lib\python-pgpdump\pgpdump\test.py" />
@@ -54,6 +59,8 @@
   <ItemGroup>
     <Folder Include="appengine_hkp" />
     <Folder Include="lib\" />
+    <Folder Include="lib\py2casefold" />
+    <Folder Include="lib\py2casefold\py2casefold" />
     <Folder Include="lib\python-pgpdump" />
     <Folder Include="lib\python-pgpdump\pgpdump" />
   </ItemGroup>
