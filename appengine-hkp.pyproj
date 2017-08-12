@@ -28,7 +28,10 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="app.yaml" />
     <Content Include="favicon.ico" />
+    <Content Include="include.yaml" />
+    <Content Include="index.yaml" />
     <Content Include="lib\py2casefold\py2casefold\CaseFolding.txt" />
     <Content Include="lib\py2casefold\py2casefold\VERSION" />
   </ItemGroup>
