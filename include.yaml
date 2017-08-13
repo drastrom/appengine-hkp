@@ -7,3 +7,15 @@ handlers:
 - url: /pks/lookup
   script: appengine_hkp.handlers.app
 
+skip_files:
+#python-pgpdump
+- ^(.*/)?python-pgpdump/testdata/.*$
+- ^(.*/)?python-pgpdump/(COPYRIGHT|README(\.md)?|MANIFEST\.in)$
+#py2casefold
+- ^(.*/)?py2casefold/(LICENSE|README\.rst|MANIFEST\.in)$
+- ^(.*/)?py2casefold/tests/.*$
+#doc files
+- ^(.*/)?.*\.md$
+#ptvs files
+- ^(.*/)?pydev_startup\.py$
+- ^(.*/)?.*\.(sln|pyproj)$

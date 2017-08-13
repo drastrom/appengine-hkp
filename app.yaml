@@ -22,22 +22,3 @@ includes:
 libraries:
 - name: webapp2
   version: "2.5.2"
-
-skip_files:
-#defaults
-- ^(.*/)?#.*#$
-- ^(.*/)?.*~$
-- ^(.*/)?.*\.py[co]$
-- ^(.*/)?.*/RCS/.*$
-- ^(.*/)?\..*$
-#python-pgpdump
-- ^(.*/)?.*/testdata/.*$
-- ^(.*/)?.*(COPYRIGHT|README|MANIFEST.in)$
-#py2casefold
-- ^(.*/)?.*(LICENSE|README.rst)$
-- ^(.*/)?.*/tests/.*$
-#doc files
-- ^(.*/)?.*\.md$
-#ptvs files
-- ^(.*/)?pydev_startup\.py$
-- ^(.*/)?.*\.(sln|pyproj)$
