@@ -14,8 +14,16 @@ import re
 import codecs
 import pgpdump.utils
 import struct
+import hashlib
 
 from appengine_hkp import utils
+
+s = hashlib.sha1()
+s.update(utils.ascii_tolower("Joe.Doe".encode('utf-8')))
+print utils.zbase32encode(s.digest())
+print utils.zbase32decode("iy9q119eutrkn8s1mk4r39qejnbu3n5q".encode('ascii')) == s.digest()
+
+
 
 class Uid(object):
 	def __repr__(self):
@@ -39,6 +47,10 @@ class Uid(object):
 	@property
 	def email(self):
 		return self._parse_uid()[2]
+
+	@property
+	def wkd_id(self):
+		return utils.zbase32encode(hashlib.sha1(utils.ascii_tolower(self.email.rpartition('@')[0].encode("utf-8"))).digest()) if self.email is not None else None
 
 	def _parse_uid(self):
 		match = self._uid_regex.match(self.uid)
@@ -166,3 +178,5 @@ pp.pprint([pubkey.shortkeyid for pubkey in pubkeys])
 print("Uid parts")
 pp.pprint([uid._parse_uid() for uid in pubkey.uids for pubkey in pubkeys])
 print(pubkeys[0].asciiarmored)
+print("WKD ids")
+pp.pprint([uid.wkd_id for uid in pubkey.uids for pubkey in pubkeys])

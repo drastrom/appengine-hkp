@@ -5,6 +5,7 @@ from google.appengine.ext.ndb import polymodel
 
 import base64
 import codecs
+import hashlib
 import re
 
 from . import utils
@@ -25,6 +26,7 @@ class Uid(ndb.Model):
 	email = ndb.ComputedProperty(lambda self: self._parse_uid()[2], 'e', indexed=True)
 	creation_time = ndb.DateTimeProperty('r', indexed=False)
 	expiration_time = ndb.DateTimeProperty('x', indexed=False)
+	wkd_id = ndb.ComputedProperty(lambda self: utils.zbase32encode(hashlib.sha1(utils.ascii_tolower(self._parse_uid()[2].rpartition('@')[0].encode("utf-8"))).digest()) if self.email is not None else None, 'w', indexed=True)
 
 class KeyBase(polymodel.PolyModel):
 	reversed_fingerprint = ndb.BlobProperty('rfp', indexed=True, required=True)
