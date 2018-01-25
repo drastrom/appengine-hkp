@@ -20,8 +20,8 @@ from appengine_hkp import utils
 
 s = hashlib.sha1()
 s.update(utils.ascii_tolower("Joe.Doe".encode('utf-8')))
-print utils.zbase32encode(s.digest())
-print utils.zbase32decode("iy9q119eutrkn8s1mk4r39qejnbu3n5q".encode('ascii')) == s.digest()
+print(utils.zbase32encode(s.digest()))
+print(utils.zbase32decode("iy9q119eutrkn8s1mk4r39qejnbu3n5q".encode('ascii')) == s.digest())
 
 
 
@@ -115,7 +115,7 @@ pubkey_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 uid_latest_selfsig = datetime.datetime.utcfromtimestamp(0)
 
 for packet in data.packets():
-	print str(type(packet))
+	print(str(type(packet)))
 	pp.pprint(packet.__dict__)
 	if isinstance(packet, pgpdump.packet.PublicKeyPacket) and not isinstance(packet, pgpdump.packet.SecretKeyPacket):
 		if type(packet) == pgpdump.packet.PublicKeyPacket:
