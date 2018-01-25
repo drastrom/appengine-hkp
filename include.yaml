@@ -7,6 +7,15 @@ handlers:
 - url: /pks/lookup
   script: appengine_hkp.handlers.app
 
+- url: /\.well-known/openpgpkey/policy
+  static_files: empty
+  upload: empty
+  mime_type: text/plain
+
+- url: /\.well-known/openpgpkey/hu/([13-9a-km-uw-z]{32})$
+  script: appengine_hkp.handlers.app
+
+
 skip_files:
 #python-pgpdump
 - ^(.*/)?python-pgpdump/testdata/.*$

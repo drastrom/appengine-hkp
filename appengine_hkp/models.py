@@ -14,19 +14,26 @@ class Uid(ndb.Model):
 	uid = ndb.StringProperty('u', indexed=True, required=True)
 
 	_uid_regex = re.compile(r'^([^<(]+)? ?(?:\(([^\)]*)\))? ?<([^>]*)>?')
-	def _parse_uid(self):
-		match = self._uid_regex.match(self.uid)
+	def _parse_uid(self, uid):
+		match = self._uid_regex.match(uid)
 		if match:
 			return (match.group(1).strip() if match.group(1) is not None else None, match.group(2).strip() if match.group(2) is not None else None, match.group(3).strip() if match.group(3) is not None else None)
 		else:
 			return (None, None, None)
+	def _uid_email_localpart(self, uid):
+		email = self._parse_uid(uid)[2]
+		return utils.zbase32encode(hashlib.sha1(utils.ascii_tolower(email.rpartition('@')[0].encode("utf-8"))).digest()) if email is not None else None
 
-	name = ndb.ComputedProperty(lambda self: self._parse_uid()[0], 'n', indexed=True)
-	comment = ndb.ComputedProperty(lambda self: self._parse_uid()[1], 'c', indexed=True)
-	email = ndb.ComputedProperty(lambda self: self._parse_uid()[2], 'e', indexed=True)
+	name = ndb.ComputedProperty(lambda self: self._parse_uid(self.uid)[0], 'n', indexed=True)
+	comment = ndb.ComputedProperty(lambda self: self._parse_uid(self.uid)[1], 'c', indexed=True)
+	email = ndb.ComputedProperty(lambda self: self._parse_uid(self.uid)[2], 'e', indexed=True)
 	creation_time = ndb.DateTimeProperty('r', indexed=False)
 	expiration_time = ndb.DateTimeProperty('x', indexed=False)
-	wkd_id = ndb.ComputedProperty(lambda self: utils.zbase32encode(hashlib.sha1(utils.ascii_tolower(self._parse_uid()[2].rpartition('@')[0].encode("utf-8"))).digest()) if self.email is not None else None, 'w', indexed=True)
+	wkd_id = ndb.ComputedProperty(lambda self: self._uid_email_localpart(self.string_id), 'w', indexed=True)
+	@property
+	def string_id(self):
+		# XXX ndb.Key encodes unicode string_ids to utf-8, so we need to decode here
+		return self.key.string_id().decode("utf-8")
 
 class KeyBase(polymodel.PolyModel):
 	reversed_fingerprint = ndb.BlobProperty('rfp', indexed=True, required=True)

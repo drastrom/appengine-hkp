@@ -36,6 +36,24 @@ class KeyAdd(webapp2.RequestHandler):
 </body>
 </html>""")
 
+def _get_key_data(q):
+	key_data = bytearray()
+	keys_to_get = []
+	for entity in q.fetch(20):
+		if not isinstance(entity, models.PublicKey):
+			keys_to_get.append(entity.key.parent())
+		else:
+			key_data.extend(entity.key_data)
+
+	if len(keys_to_get):
+		for entity in ndb.get_multi(keys_to_get):
+			if entity is not None:
+				key_data.extend(entity.key_data)
+
+	if len(key_data) == 0:
+		raise exceptions.HttpNotFoundException()
+
+	return key_data
 
 _keyid_regex = re.compile(r'^(?:0[Xx])?([0-9a-fA-F]{8}|[0-9a-fA-F]{16}|[0-9a-fA-F]{40})$')
 _algo_mapping = {'rsa': 1, 'dsa': 17, 'elg': 16, 'ec': 18, 'ecdsa': 19, 'dh': 21}
@@ -88,22 +106,7 @@ class KeyLookup(webapp2.RequestHandler):
 		else:
 			q = self._query_by_text(search, exact, fingerprint, options)
 
-		key_data = bytearray()
-		keys_to_get = []
-		for entity in q.fetch(20):
-			if not isinstance(entity, models.PublicKey):
-				keys_to_get.append(entity.key.parent())
-			else:
-				key_data.extend(entity.key_data)
-
-		if len(keys_to_get):
-			for entity in ndb.get_multi(keys_to_get):
-				if entity is not None:
-					key_data.extend(entity.key_data)
-
-		if len(key_data) == 0:
-			raise exceptions.HttpNotFoundException()
-
+		key_data = _get_key_data(q)
 		self.response.content_type = 'application/pgp-keys' if not TEST else 'text/plain'
 		self.response.write(utils.asciiarmor('PUBLIC KEY BLOCK', key_data))
 
@@ -197,8 +200,24 @@ class KeyLookup(webapp2.RequestHandler):
 		except exceptions.HttpStatusException as e:
 			self.response.status = e.status_line
 
+class WKDLookup(webapp2.RequestHandler):
+
+	def get(self, wkd_id):
+		try:
+			q = models.Uid.query(namespace='hkp').filter(models.Uid.wkd_id == wkd_id)
+
+			key_data = _get_key_data(q)
+			self.response.content_type = 'application/octet-stream'
+			try:
+				self.response.body = bytes(key_data)
+			except NameError:
+				self.response.body = str(key_data)
+		except exceptions.HttpStatusException as e:
+			self.response.status = e.status_line
+
 app = webapp2.WSGIApplication([
 	('/pks/add', KeyAdd),
-	('/pks/lookup', KeyLookup)
+	('/pks/lookup', KeyLookup),
+	(r'/\.well-known/openpgpkey/hu/([13-9a-km-uw-z]{32})$', WKDLookup)
 ], debug=True)
 
