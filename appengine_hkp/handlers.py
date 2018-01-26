@@ -205,7 +205,8 @@ class WKDLookup(webapp2.RequestHandler):
 	def get(self, wkd_id):
 		try:
 			q = models.Uid.query(namespace='hkp').filter(models.Uid.wkd_id == wkd_id)
-
+			#TODO ensure that the domain part of the email address matches "this" domain (either the request host or some configured value)
+			# HKP allows storing and retrieving any keys, but WKD only hashes the "local part" and relies on each domain having its own server
 			key_data = _get_key_data(q)
 			self.response.content_type = 'application/octet-stream'
 			try:
