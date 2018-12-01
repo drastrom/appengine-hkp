@@ -1,6 +1,6 @@
 ## Synopsis
 
-The plan is to implement at least the *get* by key id or fingerprint operation of the [HKP protocol](https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00) in Google App Engine.
+The plan is to implement at least the *get* by key id or fingerprint operation of the [HKP protocol](https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00) in Google App Engine.  While implementing this, I came across the [Web Key Directory](https://tools.ietf.org/html/draft-koch-openpgp-webkey-service-05) draft, so the ability to retrieve keys via this scheme was also added.  Note that this draft standard seems to be a moving target, and this code was written against draft 5.
 
 ## Code Example
 
