@@ -23,6 +23,9 @@ class Uid(ndb.Model):
 	def _uid_email_localpart(self, uid):
 		email = self._parse_uid(uid)[2]
 		return utils.zbase32encode(hashlib.sha1(utils.ascii_tolower(email.rpartition('@')[0].encode("utf-8"))).digest()) if email is not None else None
+	def _uid_email_domain(self, uid):
+		email = self._parse_uid(uid)[2]
+		return utils.ascii_tolower(email.rpartition('@')[2].encode("utf-8")) if email is not None else None
 
 	name = ndb.ComputedProperty(lambda self: self._parse_uid(self.uid)[0], 'n', indexed=True)
 	comment = ndb.ComputedProperty(lambda self: self._parse_uid(self.uid)[1], 'c', indexed=True)
@@ -30,6 +33,8 @@ class Uid(ndb.Model):
 	creation_time = ndb.DateTimeProperty('r', indexed=False)
 	expiration_time = ndb.DateTimeProperty('x', indexed=False)
 	wkd_id = ndb.ComputedProperty(lambda self: self._uid_email_localpart(self.string_id), 'w', indexed=True)
+	wkd_domain = ndb.ComputedProperty(lambda self: self._uid_email_domain(self.string_id), 'd', indexed=True)
+
 	@property
 	def string_id(self):
 		# XXX ndb.Key encodes unicode string_ids to utf-8, so we need to decode here

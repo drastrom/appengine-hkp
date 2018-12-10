@@ -4,15 +4,21 @@ handlers:
   secure: always
   login: admin
 
+# enable the following to update datastore schema
+#- url: /pks/MigrateUIDs
+#  script: appengine_hkp.handlers.app
+#  secure: always
+#  login: admin
+
 - url: /pks/lookup
   script: appengine_hkp.handlers.app
 
-- url: /\.well-known/openpgpkey/policy
+- url: /\.well-known/openpgpkey/([^/]+/)?policy
   static_files: empty
   upload: empty
   mime_type: text/plain
 
-- url: /\.well-known/openpgpkey/hu/([13-9a-km-uw-z]{32})$
+- url: /\.well-known/openpgpkey/([^/]+/)?hu/([13-9a-km-uw-z]{32})$
   script: appengine_hkp.handlers.app
 
 

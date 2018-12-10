@@ -16,6 +16,12 @@ handlers:
 - url: .*
   script: main.app
 
+# to set what domain you are serving WKD for, rather than letting it guess
+# from the request host, you can set an evironment variable in your app.yaml
+# like so:
+env_variables:
+  APPENGINE_WKD_DOMAIN: 'example.com'
+
 includes:
 - include.yaml
 

@@ -202,11 +202,19 @@ class KeyLookup(webapp2.RequestHandler):
 
 class WKDLookup(webapp2.RequestHandler):
 
-	def get(self, wkd_id):
+	def get(self, dom, wkd_id):
 		try:
-			q = models.Uid.query(namespace='hkp').filter(models.Uid.wkd_id == wkd_id)
-			#TODO ensure that the domain part of the email address matches "this" domain (either the request host or some configured value)
-			# HKP allows storing and retrieving any keys, but WKD only hashes the "local part" and relies on each domain having its own server
+			if dom is None:
+				dom = self.request.environ.get("APPENGINE_WKD_DOMAIN")
+				if dom is None:
+					dom = self.request.host
+					if dom is not None:
+						if ":" in dom and dom[-1] != ']':
+							dom = dom.rsplit(":", 1)[0]
+						if dom[:11].lower() == "openpgpkey.":
+							dom = dom[11:]
+			dom = utils.ascii_tolower(dom.encode("utf-8"))
+			q = models.Uid.query(namespace='hkp').filter(models.Uid.wkd_id == wkd_id).filter(models.Uid.wkd_domain == dom)
 			key_data = _get_key_data(q)
 			self.response.content_type = 'application/octet-stream'
 			try:
@@ -216,9 +224,18 @@ class WKDLookup(webapp2.RequestHandler):
 		except exceptions.HttpStatusException as e:
 			self.response.status = e.status_line
 
+class MigrateUIDs(webapp2.RequestHandler):
+	def get(self):
+		# NOTE no attempt to page through, so hope there's not too many
+		q = models.Uid.query(namespace='hkp')
+		uids = q.fetch()
+		ndb.put_multi(uids)
+		self.response.write('Put {} entities to Datastore'.format(len(uids)))
+
 app = webapp2.WSGIApplication([
 	('/pks/add', KeyAdd),
+	('/pks/MigrateUIDs', MigrateUIDs),
 	('/pks/lookup', KeyLookup),
-	(r'/\.well-known/openpgpkey/hu/([13-9a-km-uw-z]{32})$', WKDLookup)
+	(r'/\.well-known/openpgpkey/(?:([^/]+)/)?hu/([13-9a-km-uw-z]{32})$', WKDLookup)
 ], debug=True)
 
